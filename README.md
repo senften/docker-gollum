@@ -53,6 +53,11 @@ To add more options , checkout this link [gollum options](https://github.com/gol
     docker create -v /root/wikidata --name gollum-store senften/gollum /bin/true
 	docker run -d --volumes-from gollum-store  -p 4567:4567 --name gollum senften/gollum --h1-title --show-all --css
 
+#### To Manage the Volume
+
+    docker run -i -t --entrypoint=/bin/bash --rm --volumes-from gollum-store senften/gollum
+	docker cp ~/.ssh/id_rsa dazzling_cori:/root/.ssh/id_rsa
+
 ### Use nginx-proxy
 
 	sudo docker run -d -P --name gollum -v ~/wikidata:/root/wikidata -e VIRTUAL_HOST=wiki.example.com -e VIRTUAL_PORT=80 -p 80 suttang/gollum --allow-uploads --config /root/wikidata/config.rb --port 80
