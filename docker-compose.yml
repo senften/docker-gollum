@@ -1,0 +1,14 @@
+version: "2"
+
+services: 
+  gollum-management:
+    #container_name: senften/gollum
+    image: senften/gollum
+    #volumes:
+        #- $SSH_AUTH_SOCK:/ssh-agent # Forward local machine SSH key to docker
+    volumes_from:
+        - container:gollum-store
+    environment:
+        SSH_AUTH_SOCK: /ssh-agent
+    entrypoint: 
+      - /bin/bash
