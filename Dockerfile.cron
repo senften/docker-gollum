@@ -1,4 +1,4 @@
-FROM ruby
+FROM debian
 
 MAINTAINER Scott Senften <scott@senften.us>
 
@@ -10,9 +10,6 @@ RUN apt-get upgrade -y
 RUN apt-get install -y -q build-essential python python-docutils libicu-dev libreadline-dev libssl-dev zlib1g-dev git-core
 RUN apt-get clean
 RUN rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
-
-# Install gollum
-RUN gem install gollum redcarpet github-markdown
 
 # Set up to be able to handle ssh if desired
 RUN mkdir /root/.ssh
@@ -29,11 +26,4 @@ RUN chmod 777 /root/gitpullpush.sh
 COPY wiki-git-cron /etc/cron.d/wiki-git-cron
 RUN crontab /etc/cron.d/wiki-git-cron
 
-# Initialize wiki data
-RUN mkdir /root/wikidata
-RUN git init /root/wikidata
-
-# Expose default gollum port 4567
-EXPOSE 4567
-
-ENTRYPOINT ["/usr/local/bundle/bin/gollum", "/root/wikidata"]
+CMD ["cron", "-f"]
