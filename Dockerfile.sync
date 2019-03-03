@@ -1,4 +1,5 @@
-FROM debian
+FROM ruby:2.6
+# based on debian
 
 MAINTAINER Scott Senften <scott@senften.us>
 
@@ -11,19 +12,35 @@ RUN apt-get install -y -q build-essential python python-docutils libicu-dev libr
 RUN apt-get clean
 RUN rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
+# Install gollum
+RUN gem install gollum redcarpet github-markdown
+
 # Set up to be able to handle ssh if desired
 RUN mkdir /root/.ssh
 RUN chmod 700 /root/.ssh
+COPY id_rsa /root/.ssh
 
 RUN  echo "    IdentityFile ~/.ssh/id_rsa" >> /etc/ssh/ssh_config
+RUN ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
 
 # Set up cron
 RUN apt-get update && apt-get install -y cron
-#COPY hello-cron /etc/cron.d/hello-cron
-#RUN crontab /etc/cron.d/hello-cron
+COPY hello-cron /etc/cron.d/hello-cron
+RUN crontab /etc/cron.d/hello-cron
 COPY gitpullpush.sh /root
 RUN chmod 777 /root/gitpullpush.sh
 COPY wiki-git-cron /etc/cron.d/wiki-git-cron
-RUN crontab /etc/cron.d/wiki-git-cron
+RUN crontab -l | cat - /etc/cron.d/wiki-git-cron >crontab.txt && crontab crontab.txt
 
-CMD ["cron", "-f"]
+# Initialize wiki data
+RUN mkdir /root/wikidata
+RUN git init /root/wikidata
+
+# Expose default gollum port 4567
+EXPOSE 4567
+
+# Copy in startup script
+COPY gollum_w_sync.sh /root
+RUN chmod 777 /root/gollum_w_sync.sh
+
+ENTRYPOINT ["/root/gollum_w_sync.sh"]
